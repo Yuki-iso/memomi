@@ -5,7 +5,7 @@ FROM rust:latest
 WORKDIR /usr/src/memomi
 
 # Copy the Rust project files to the working directory
-COPY /back_logic .
+COPY . .
 
 # Build the Rust app
 RUN cargo build
