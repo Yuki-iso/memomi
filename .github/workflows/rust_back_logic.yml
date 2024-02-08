@@ -56,7 +56,6 @@ jobs:
     defaults:
       run:
         working-directory: back_logic
-    needs: compile
     steps:
       - name: Setup | Checkout
         uses: actions/checkout@v2
