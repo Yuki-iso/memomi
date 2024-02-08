@@ -1,4 +1,4 @@
-name: Backend_Rust
+name: back_logic
 
 on:
   push:
