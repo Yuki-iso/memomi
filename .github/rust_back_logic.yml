@@ -1,0 +1,112 @@
+name: Backend_Rust
+
+on:
+  push:
+    paths:
+      - "back_logic/**"
+      - ".github/workflows/rust_back_logic.yml"
+    branches: [ "master" ]
+  pull_request:
+    paths:
+      - "back_logic/**"
+    branches: [ "master" ]
+
+env:
+  CARGO_TERM_COLOR: always
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}/${{ github.workflow }}
+
+jobs:
+  lint:
+    name: Code_Smells
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: back_logic
+    steps:
+      - name: Setup | Checkout
+        uses: actions/checkout@v2
+      - name: Setup | Rust
+        uses: ATiltedTree/setup-rust@v1
+        with:
+          rust-version: stable
+          components: clippy
+      - name: Build | Lint
+        run: cargo clippy
+        
+  compile:
+    name: Dendency_Errors
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: back_logic
+    steps:
+      - name: Setup | Checkout
+        uses: actions/checkout@v2
+      - name: Setup | Rust
+        uses: ATiltedTree/setup-rust@v1
+        with:
+          rust-version: stable
+      - name: Build | Compile
+        run: cargo check
+
+  test:
+    name: Unit_Test
+    strategy:
+      matrix:
+        os:
+          - ubuntu-latest
+          - windows-latest
+          - macOS-latest
+        rust:
+          - stable
+          - beta
+          - nightly
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        working-directory: back_logic
+    needs: [compile]
+    steps:
+      - name: Setup | Checkout
+        uses: actions/checkout@v2
+      - name: Setup | Rust
+        uses: ATiltedTree/setup-rust@v1
+        with:
+          rust-version: ${{ matrix.rust }}
+      - name: Build | Compile
+        run: cargo test
+
+  build:
+    name: Build_Package
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.event_name == 'push'
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v3
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@9ec57ed1fcdbf14dcef7dfbe97b2010124a938b7
+        with:
+          images: ghcr.io/${{ env.IMAGE_NAME }}
+          
+      - name: Build and push Docker image
+        uses: docker/build-push-action@f2a1d5e99d037542a71f64918e516c093c6f3fc4
+        with:
+          file: ${{ github.workflow }}/Dockerfile
+          context: ${{ github.workflow }}/.
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
