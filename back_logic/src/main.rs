@@ -22,7 +22,7 @@ async fn main() -> std::io::Result<()> {
         App::new().service(hello)
         // Create a new instance of the App and register the hello function 
 
-    }).bind("127.0.0.1:80")?.run().await
+    }).bind("0.0.0.0:80")?.run().await
     // Bind the server to the IP address and port
     // Start the server and await its completion
 }
