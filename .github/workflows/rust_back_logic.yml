@@ -63,7 +63,7 @@ jobs:
       - name: Setup | Rust
         uses: ATiltedTree/setup-rust@v1
         with:
-          rust-version: ${{ matrix.rust }}
+          rust-version: stable
       - name: Build | Compile
         run: cargo test
 
