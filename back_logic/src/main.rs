@@ -1,28 +1,27 @@
-use actix_web::{get, App, HttpResponse, HttpServer, Responder};
+mod api;
+mod model;
+mod repository;
 
-// Import necessary dependencies from Actix Web framework
-
-#[get("/")]
-async fn hello() -> impl Responder {
-    // Define a handler function for GET requests to the root path ("/")
-    // The function returns a type that implements the Responder trait
-
-    HttpResponse::Ok().body("Hello, World!")
-    // Return an HTTP response with a status code of 200 (OK)
-    // and a response body of "Hello, World!"
-}
+use actix_web::{App, HttpServer, web};
+use api::user::{get_user, create_user};
+use mongodb::Client;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    // Entry point of the application
+    std::env::set_var("RUST_LOG", "debug");
+    std::env::set_var("RUST_BACKTRACE", "1");
+    env_logger::init();
+    
+    let uri = "mongodb+srv://jeffreyvanderzande:bPXGXWYgdCrO8fGm@testdb.thdjsuq.mongodb.net/?retryWrites=true&w=majority";
+    let client = Client::with_uri_str(uri).await.expect("failed to connect");
 
-    HttpServer::new(|| {
-        // Create a new instance of the HttpServer
-
-        App::new().service(hello)
-        // Create a new instance of the App and register the hello function 
-
-    }).bind("0.0.0.0:80")?.run().await
-    // Bind the server to the IP address and port
-    // Start the server and await its completion
+    HttpServer::new(move || {
+        App::new()
+            .app_data(web::Data::new(client.clone()))
+            .service(create_user)
+            .service(get_user)
+    })
+    .bind(("127.0.0.1", 8080))?
+    .run()
+    .await
 }
