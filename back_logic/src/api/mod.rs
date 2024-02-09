@@ -1,2 +1,2 @@
 pub mod user;
-pub mod user_booklist;
+pub mod user_wordlist;
