@@ -1,7 +1,7 @@
 mod api;
 mod model;
 
-use actix_web::{App, HttpServer, web};
+use actix_web::{middleware, web, App, HttpServer};
 use api::user::{get_user, create_user};
 use api::user_wordlist::get_user_wordlist;
 use mongodb::Client;
@@ -16,15 +16,14 @@ async fn main() -> std::io::Result<()> {
     std::env::set_var("RUST_LOG", "debug");
     std::env::set_var("RUST_BACKTRACE", "1");
     env_logger::init();
-    println!("test");
     let uri = match env::var("MONGO_URL") {
         Ok(v) => v.to_string(),
         Err(_) => format!("Error loading env variable"),
     }; 
     let client = Client::with_uri_str(uri).await.expect("failed to connect");
-    println!("test2");
     HttpServer::new(move || {
         App::new()
+            .wrap(middleware::Logger::default())
             .app_data(web::Data::new(client.clone()))
             .service(create_user)
             .service(get_user)
