@@ -4,7 +4,7 @@ mod model;
 use actix_web::{middleware, web, App, HttpServer};
 use api::user::{get_user, create_user};
 use api::user_wordlist::get_user_wordlist;
-use api::user_vocablist::create_vocab_link;
+use api::user_vocab_list::create_vocab_link;
 use mongodb::Client;
 use std::env;
 extern crate dotenv;
