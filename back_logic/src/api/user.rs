@@ -4,18 +4,17 @@ use actix_web::{
     HttpResponse,
     web
 };
-use mongodb::{Client, Collection, bson::doc};
+use mongodb::{bson::doc, Collection, Database};
 
 use crate::model::user::User;
 
-const DB_NAME: &str = "mydb";
-const COL_NAME: &str = "users";
+const COL_NAME: &str = "user";
 
 #[get("/get_user/{username}")]
-async fn get_user(client: web::Data<Client>, username: web::Path<String>) -> HttpResponse {
+async fn get_user(db: web::Data<Database>, username: web::Path<String>) -> HttpResponse {
 
     let username = username.into_inner();
-    let collection: Collection<User> = client.database(DB_NAME).collection(COL_NAME);
+    let collection: Collection<User> = db.collection(COL_NAME);
 
     match collection
         .find_one(doc! { "username": &username }, None)
@@ -30,8 +29,8 @@ async fn get_user(client: web::Data<Client>, username: web::Path<String>) -> Htt
 }
 
 #[post("/create_user")]
-async fn create_user(client: web::Data<Client>, form: web::Form<User>) -> HttpResponse {
-    let collection = client.database(DB_NAME).collection(COL_NAME);
+async fn create_user(db: web::Data<Database>, form: web::Form<User>) -> HttpResponse {
+    let collection = db.collection(COL_NAME);
     let result = collection.insert_one(form.into_inner(), None).await;
     match result {
         Ok(_) => HttpResponse::Ok().body("user added"),

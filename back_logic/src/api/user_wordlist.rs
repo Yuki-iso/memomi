@@ -4,17 +4,16 @@ use actix_web::{
     HttpResponse,
     web
 };
-use mongodb::{Client, Collection, bson::doc};
+use mongodb::{bson::doc, Collection, Database};
 use crate::model::user_wordlist::UserWordList;
 
-const DB_NAME: &str = "mydb";
 const COL_NAME: &str = "user_wordlist";
 
 #[get("/get_wordlist/{user_id}")]
-async fn get_user_wordlist(client: web::Data<Client>, user_id: web::Path<String>) -> HttpResponse {
+async fn get_user_wordlist(db: web::Data<Database>, user_id: web::Path<String>) -> HttpResponse {
 
     let user_id = user_id.into_inner();
-    let collection: Collection<UserWordList> = client.database(DB_NAME).collection(COL_NAME);
+    let collection: Collection<UserWordList> = db.collection(COL_NAME);
 
     match collection
         .find_one(doc! { "user_id": &user_id }, None)
@@ -28,5 +27,3 @@ async fn get_user_wordlist(client: web::Data<Client>, user_id: web::Path<String>
     }
 }
 
-//#[post("/init_wordlist")]
-// async fn init_wordlist(client: web::Data<Client>) {}
