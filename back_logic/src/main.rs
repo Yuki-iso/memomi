@@ -1,28 +1,40 @@
-use actix_web::{get, App, HttpResponse, HttpServer, Responder};
+mod api;
+mod model;
 
-// Import necessary dependencies from Actix Web framework
-
-#[get("/")]
-async fn hello() -> impl Responder {
-    // Define a handler function for GET requests to the root path ("/")
-    // The function returns a type that implements the Responder trait
-
-    HttpResponse::Ok().body("Hello, World!")
-    // Return an HTTP response with a status code of 200 (OK)
-    // and a response body of "Hello, World!"
-}
+use actix_web::{middleware, web, App, HttpServer};
+use api::user::{get_user, create_user};
+use api::user_wordlist::get_user_wordlist;
+use mongodb::Client;
+use std::env;
+extern crate dotenv;
+use  dotenv::dotenv;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    // Entry point of the application
+    dotenv().ok();
+   
+    std::env::set_var("RUST_LOG", "debug");
+    std::env::set_var("RUST_BACKTRACE", "1");
+    env_logger::init();
 
-    HttpServer::new(|| {
-        // Create a new instance of the HttpServer
+    let uri = match env::var("MONGO_URL") {
+        Ok(v) => v.to_string(),
+        Err(_) => format!("Error loading env variable"),
+    };
+    
+    let client = Client::with_uri_str(uri).await.expect("failed to connect");
+    let db_name = env::var("DB_NAME").expect("DB_NAME must be set");  
+    let db = client.database(db_name.as_str());
 
-        App::new().service(hello)
-        // Create a new instance of the App and register the hello function 
-
-    }).bind("0.0.0.0:80")?.run().await
-    // Bind the server to the IP address and port
-    // Start the server and await its completion
+    HttpServer::new(move || {
+        App::new()
+            .wrap(middleware::Logger::default())
+            .app_data(web::Data::new(db.clone()))
+            .service(create_user)
+            .service(get_user)
+            .service(get_user_wordlist)
+    })
+    .bind(("127.0.0.1", 8080))?
+    .run()
+    .await
 }
