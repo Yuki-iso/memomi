@@ -37,12 +37,7 @@ async fn create_vocab_link(db: web::Data<Database>, myObj: web::Json<MyObj>) -> 
     let result = collection.insert_one(doc, None).await;
     match result {
         Ok(InsertOneResult{ inserted_id: user_vocablist, ..}) => HttpResponse::Ok().json(user_vocablist),
-        Ok(InsertOneResult) => {
-            HttpResponse::NotFound().body(format!("User has no word list"))
-        }
         Err(err) => HttpResponse::InternalServerError().body(err.to_string()),
-    };
-
-    return HttpResponse::Ok().body("testing"); //<- Lol??? je kunt return en ; weghalen
+    }
 }
 
