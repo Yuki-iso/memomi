@@ -5,19 +5,16 @@ use actix_web::{
 };
 use bson::oid::ObjectId;
 use bson::DateTime;
-use futures::TryStreamExt;
 use mongodb::options::FindOneOptions;
-use mongodb::options::FindOptions;
 use serde::Deserialize;
 use serde::Serialize;
 
 use mongodb::{bson::doc, results::InsertOneResult, Collection, Database};
 
-use crate::model::user::User;
 use crate::model::user_vocab::{Status, UserVocab};
 use crate::model::user_vocab_list::UserVocabList;
 use crate::model::status_list::StatusList;
-use crate::model::vocab_list::{self, VocabList};
+use crate::model::vocab_list::{VocabList};
 
 const COL_NAME: &str = "user_vocab_list";
 const COL_NAME_VOCAB: &str = "vocab_list";
