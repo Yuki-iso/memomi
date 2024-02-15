@@ -13,6 +13,7 @@ use serde::Serialize;
 
 use mongodb::{bson::doc, results::InsertOneResult, Collection, Database};
 
+use crate::model::user::User;
 use crate::model::user_vocab::{Status, UserVocab};
 use crate::model::user_vocab_list::UserVocabList;
 use crate::model::status_list::StatusList;
@@ -22,7 +23,7 @@ const COL_NAME: &str = "user_vocab_list";
 const COL_NAME_VOCAB: &str = "vocab_list";
 
 #[derive(Deserialize)]
-pub struct MyObj {
+pub struct UserInput{
     user_id: ObjectId,
     vocab_list_id: ObjectId
 }
@@ -38,12 +39,10 @@ pub struct VocabResult {
 }
 
 #[post("/create_vocab_link")]
-async fn create_vocab_link(db: web::Data<Database>, myObj: web::Json<MyObj>) -> HttpResponse {
+async fn create_vocab_link(db: web::Data<Database>, user_input: web::Json<UserInput>) -> HttpResponse {
  
-    let user_id = myObj.user_id;
     let collection:  Collection<UserVocabList> = db.collection(COL_NAME);
     let collection_vocab: Collection<VocabList> = db.collection(COL_NAME_VOCAB);
-    let test: Vec<UserVocab>;
 
     let options = FindOneOptions::builder()
         .projection(doc! {"vocab_list._id": 1})
@@ -52,34 +51,34 @@ async fn create_vocab_link(db: web::Data<Database>, myObj: web::Json<MyObj>) -> 
     let result = collection_vocab
         .clone_with_type::<VocabListResult>()
         .find_one(doc!{"name": "n5"}, options)
-        .await;
-    println!("{:?}", result);  
-
-            
+        .await.unwrap();
+    let vocab_list_array = result.unwrap().vocab_list;
+    let mut user_vocabs: Vec<UserVocab> = Vec::new();
+    
+    for i in vocab_list_array{
+        user_vocabs.push(UserVocab {
+            word_id: i._id,
+             priority: DateTime::now(),
+            status: Status::New,
+        })
+    };
+               
     let link_vocab_list = UserVocabList { 
-        user_id: user_id, 
-        vocab_list: vec![
+        user_id: user_input.user_id, 
+        status_list: vec![
            StatusList{
-                status_list_id: myObj.vocab_list_id,
-                user_vocabs: vec![
-                    UserVocab {
-                        // change this to all word ids 
-                        word_id: user_id,
-                        priority: DateTime::now(),
-                        status: Status::New, 
-                    }
-                ] 
+                status_list_id: user_input.vocab_list_id,
+                user_vocabs: user_vocabs
             },
 
         ],
     };
-    HttpResponse::Ok().body("bitch")
-    //let result = collection
-     //   .insert_one(link_vocab_list, None)
-       // .await;
-    //match result {
-      //  Ok(InsertOneResult{ inserted_id: user_vocablist, ..}) => HttpResponse::Ok().json(user_vocablist),
-        //Err(err) => HttpResponse::InternalServerError().body(err.to_string()),
-    // }
+    let result = collection
+        .insert_one(link_vocab_list, None)
+        .await;
+    match result {
+        Ok(InsertOneResult{ inserted_id: user_vocablist, ..}) => HttpResponse::Ok().json(user_vocablist),
+        Err(err) => HttpResponse::InternalServerError().body(err.to_string()),
+     }
 }
 

@@ -6,5 +6,5 @@ use super::status_list::StatusList;
 #[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize)]
 pub struct UserVocabList{
     pub user_id: ObjectId,
-    pub vocab_list: Vec<StatusList>,
+    pub status_list: Vec<StatusList>,
 }
