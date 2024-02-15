@@ -16,3 +16,5 @@ strum = { version ="0.24", features = ["derive"]}
 derive_more = "^0.99"
 mongodb = "2.1"
 dotenv = "0.15.0"
+bson = "2.9.0"
+futures = "0.3"
