@@ -3,7 +3,6 @@ mod model;
 
 use actix_web::{middleware, web, App, HttpServer};
 use api::user::{get_user, create_user};
-use api::user_wordlist::get_user_wordlist;
 use api::user_vocab_list::create_vocab_link;
 use mongodb::Client;
 use std::env;
@@ -33,7 +32,6 @@ async fn main() -> std::io::Result<()> {
             .app_data(web::Data::new(db.clone()))
             .service(create_user)
             .service(get_user)
-            .service(get_user_wordlist)
             .service(create_vocab_link)
     })
     .bind(("127.0.0.1", 8080))?
