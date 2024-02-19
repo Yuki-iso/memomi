@@ -1,15 +1,17 @@
+use actix_web::put;
 use actix_web::{ 
     post,
     HttpResponse,
     web
 };
 use bson::oid::ObjectId;
-use bson::DateTime;
+use bson::{DateTime, Document};
 use mongodb::options::FindOneOptions;
 use serde::Deserialize;
 use serde::Serialize;
 
-use mongodb::{bson::doc, results::InsertOneResult, Collection, Database};
+
+use mongodb::{bson::doc, results::InsertOneResult, Collection, Database, options::UpdateOptions};
 
 use crate::model::user_vocab::{Status, UserVocab};
 use crate::model::user_vocab_list::UserVocabList;
@@ -77,5 +79,41 @@ async fn create_vocab_link(db: web::Data<Database>, user_input: web::Json<UserIn
         Ok(InsertOneResult{ inserted_id: user_vocablist, ..}) => HttpResponse::Ok().json(user_vocablist),
         Err(err) => HttpResponse::InternalServerError().body(err.to_string()),
      }
+}
+
+#[derive(Deserialize, Serialize, Debug)]
+pub struct VocabStatus{
+    user_id: ObjectId,
+    vocab_id: ObjectId,
+    status: String,
+    priority: String
+}
+
+
+
+#[put("/update_status")]
+async fn update_status(db: web::Data<Database>, status: web::Json<VocabStatus> ) -> HttpResponse {
+
+    let collection: Collection<UserVocabList> = db.collection(COL_NAME);
+    let filter = doc! { "user_id": status.user_id };
+    let update = doc! { 
+        "$set": doc! {
+            "status_list.$[].user_vocabs.$[xxx].status": status.status.clone(),
+            "status_list.$[].user_vocabs.$[xxx].priority": status.priority.clone()
+        }
+    }; 
+
+    let array_filters: Option<Vec<Document>> = Some(vec![doc! {"xxx.word_id": status.vocab_id.clone()}]);
+    let options = UpdateOptions::builder()
+        .array_filters(array_filters)
+        .build();
+
+    match collection.update_one(filter, update, Some(options)).await {
+        Ok(_) => HttpResponse::Ok().body("Update successful"),
+        Err(e) => {
+            eprintln!("Error updating status: {}", e);
+            HttpResponse::InternalServerError().finish()
+        }
+    }
 }
 
