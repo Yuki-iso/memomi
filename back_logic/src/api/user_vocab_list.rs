@@ -87,7 +87,6 @@ async fn new_words(db: web::Data<Database>, status_list_id: web::Path<String>) -
     let collection: Collection<UserVocabList> = db.collection("user_vocab_list");
 
     let filter = doc! {
-        //"_id": mongodb::bson::oid::ObjectId::parse_str("65cdf9b61efb89c54aa67c99").unwrap()
         "status_list": {
             "$elemMatch": { 
                 "status_list_id": mongodb::bson::oid::ObjectId::parse_str(status_list_id.to_string()).unwrap()
@@ -95,44 +94,14 @@ async fn new_words(db: web::Data<Database>, status_list_id: web::Path<String>) -
         }
     };
     
-    /*
-    let projection = doc! {
-        "user_vocab_list.status_list.user_vocabs": 1
-    };
-
-    let options = FindOneOptions::builder()
-        .projection(projection)
-        .build();
-    */
-        
-    //println!("{:?}", collection.find_one(filter, None).await);
-    let result = collection.find_one(filter, None).await.unwrap();
-    println!("{:?}", result.clone().unwrap().status_list[0].user_vocabs);
+    let mut result = collection.find_one(filter, None).await;
     let mut words: Vec<UserVocab> = Vec::new();
     while words.len() < 10 {
-        let temp = result.clone().unwrap().status_list[0].user_vocabs.pop();
-        match temp.clone().unwrap().status {
-            Status::New => words.push(temp.expect("yeah..")),
-            _ => println!(":/"),
+        let temp = result.status_list[0].user_vocabs.pop().unwrap();
+        match temp.status {
+            Status::New => words.push(temp),
+            _ => println!("Emum != 'New'"),
         }
     }
-    //for status_lists in 
-    
-    /*
-    // Execute the find operation
-    let mut cursor = collection.find(filter, options).await.unwrap();
-    //println!("{:?}", cursor);
-    let mut result = String::new();
-    while let Some(doc) = cursor.next().await {
-        println!("{:?}", doc);
-        if let Ok(document) = doc {
-            println!("document Ok");
-            if let Ok(status_list) = bson::from_document::<UserVocabList>(document) {
-                println!("status_list Ok");
-                result.push_str(&format!("{:?}", status_list));
-            }
-        }
-    }
-    */
     HttpResponse::Ok().json(words)
 }
