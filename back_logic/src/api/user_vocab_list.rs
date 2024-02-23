@@ -1,3 +1,6 @@
+use std::borrow::Borrow;
+use std::borrow::BorrowMut;
+
 use actix_web::{ 
     post,
     HttpResponse,
@@ -94,14 +97,16 @@ async fn new_words(db: web::Data<Database>, status_list_id: web::Path<String>) -
         }
     };
     
-    let mut result = collection.find_one(filter, None).await;
+    let mut result = collection.find_one(filter, None).await.unwrap();
     let mut words: Vec<UserVocab> = Vec::new();
-    while words.len() < 10 {
-        let temp = result.status_list[0].user_vocabs.pop().unwrap();
+    let mut i = 0;
+
+    while result.as_mut().unwrap().status_list[0].user_vocabs.len() > 0 {
+        let temp = result.as_mut().unwrap().status_list[0].user_vocabs.pop().unwrap();
         match temp.status {
-            Status::New => words.push(temp),
-            _ => println!("Emum != 'New'"),
+            Status::New => if i < 10 {words.push(temp); i = i + 1;},
+            _ => words.push(temp),
         }
-    }
+    }   
     HttpResponse::Ok().json(words)
 }
