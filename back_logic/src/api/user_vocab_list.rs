@@ -1,6 +1,3 @@
-use std::borrow::Borrow;
-use std::borrow::BorrowMut;
-
 use actix_web::{ 
     post,
     HttpResponse,
@@ -10,10 +7,9 @@ use actix_web::{
 };
 use bson::oid::ObjectId;
 use bson::DateTime;
-use mongodb::options::{FindOneOptions, FindOptions};
+use mongodb::options::FindOneOptions;
 use serde::Deserialize;
 use serde::Serialize;
-use actix_web::web::Json;
 use mongodb::{bson::doc, results::InsertOneResult, Collection, Database};
 
 use crate::model::user_vocab::{Status, UserVocab};
@@ -87,7 +83,7 @@ async fn create_vocab_link(db: web::Data<Database>, user_input: web::Json<UserIn
 #[get("/new_words/{status_list_id}")]
 async fn new_words(db: web::Data<Database>, status_list_id: web::Path<String>) -> HttpResponse {
 
-    let collection: Collection<UserVocabList> = db.collection("user_vocab_list");
+    let collection: Collection<UserVocabList> = db.collection(COL_NAME);
 
     let filter = doc! {
         "status_list": {
@@ -97,12 +93,13 @@ async fn new_words(db: web::Data<Database>, status_list_id: web::Path<String>) -
         }
     };
     
-    let mut result = collection.find_one(filter, None).await.unwrap();
+    let result = collection.find_one(filter, None).await.unwrap();
     let mut words: Vec<UserVocab> = Vec::new();
     let mut i = 0;
+    let mut result = result.unwrap().status_list[0].user_vocabs.clone();
 
-    while result.as_mut().unwrap().status_list[0].user_vocabs.len() > 0 {
-        let temp = result.as_mut().unwrap().status_list[0].user_vocabs.pop().unwrap();
+    while result.len() > 0 {
+        let temp = result.pop().unwrap();
         match temp.status {
             Status::New => if i < 10 {words.push(temp); i = i + 1;},
             _ => words.push(temp),
