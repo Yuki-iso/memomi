@@ -1,16 +1,11 @@
 <script>
 </script>
 
-<header class="w-full h-12 flex justify-between p-4">
-	<div class="">
+<header class="w-full flex justify-between p-4">
     <a href="/">
-      <p class="">MEMOMI</p>
+      <p class="font-jomhuria text-6xl">MEMOMI</p>
     </a>
-	</div>
 	<nav>
-    <ul class="flex">
-      <li><a href="/vocab">Vocab</a></li>
-    </ul>
-	</nav>
+  </nav>
 </header>
 
