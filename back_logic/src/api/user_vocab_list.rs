@@ -2,7 +2,9 @@ use actix_web::put;
 use actix_web::{ 
     post,
     HttpResponse,
-    web
+    web,
+    get,
+    
 };
 use bson::oid::ObjectId;
 use bson::{DateTime, Document};
@@ -10,13 +12,12 @@ use mongodb::options::FindOneOptions;
 use serde::Deserialize;
 use serde::Serialize;
 
-
 use mongodb::{bson::doc, results::InsertOneResult, Collection, Database, options::UpdateOptions};
 
 use crate::model::user_vocab::{Status, UserVocab};
 use crate::model::user_vocab_list::UserVocabList;
 use crate::model::status_list::StatusList;
-use crate::model::vocab_list::{VocabList};
+use crate::model::vocab_list::VocabList;
 
 const COL_NAME: &str = "user_vocab_list";
 const COL_NAME_VOCAB: &str = "vocab_list";
@@ -81,6 +82,35 @@ async fn create_vocab_link(db: web::Data<Database>, user_input: web::Json<UserIn
      }
 }
 
+
+#[get("/new_words/{status_list_id}")]
+async fn new_words(db: web::Data<Database>, status_list_id: web::Path<String>) -> HttpResponse {
+
+    let collection: Collection<UserVocabList> = db.collection(COL_NAME);
+
+    let filter = doc! {
+        "status_list": {
+            "$elemMatch": { 
+                "status_list_id": mongodb::bson::oid::ObjectId::parse_str(status_list_id.to_string()).unwrap()
+            }
+        }
+    };
+    
+    let result = collection.find_one(filter, None).await.unwrap();
+    let mut words: Vec<UserVocab> = Vec::new();
+    let mut i = 0;
+    let mut result = result.unwrap().status_list[0].user_vocabs.clone();
+
+    while result.len() > 0 {
+        let temp = result.pop().unwrap();
+        match temp.status {
+            Status::New => if i < 10 {words.push(temp); i = i + 1;},
+            _ => words.push(temp),
+        }
+    }   
+    HttpResponse::Ok().json(words)
+}
+
 #[derive(Deserialize, Serialize, Debug)]
 pub struct VocabStatus{
     user_id: ObjectId,
@@ -116,4 +146,5 @@ async fn update_status(db: web::Data<Database>, status: web::Json<VocabStatus> )
         }
     }
 }
+
 

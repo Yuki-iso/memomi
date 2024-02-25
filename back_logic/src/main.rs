@@ -3,7 +3,7 @@ mod model;
 
 use actix_web::{middleware, web, App, HttpServer};
 use api::user::{get_user, create_user};
-use api::user_vocab_list::{create_vocab_link, update_status};
+use api::user_vocab_list::{create_vocab_link, new_words, update_status};
 use mongodb::Client;
 use std::env;
 extern crate dotenv;
@@ -33,6 +33,7 @@ async fn main() -> std::io::Result<()> {
             .service(create_user)
             .service(get_user)
             .service(create_vocab_link)
+            .service(new_words)
             .service(update_status)
     })
     .bind(("127.0.0.1", 8080))?
