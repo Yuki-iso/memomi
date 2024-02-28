@@ -39,7 +39,6 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .wrap(middleware::Logger::default())
             .app_data(web::Data::new(db.clone()))
-            .app_data(web::Data::new(key.clone()))
             .service(create_user)
             .service(get_user)
             .service(create_vocab_link)
