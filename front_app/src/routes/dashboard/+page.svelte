@@ -12,7 +12,7 @@
 		<div class="flex gap-4">
 			<a
 				href="/vocab"
-				class="bg-gray-200 flex flex-col justify-between w-1/2 h-72 p-5 rounded-xl hover:bg-gray-400 cursor-pointer"
+				class="bg-gray-200 flex flex-col justify-between w-1/2 h-72 p-5 rounded-xl hover:bg-gray-300 cursor-pointer"
 			>
 				<div>
 					<p class="text-6xl font-bold">語彙</p>
@@ -26,7 +26,7 @@
 			</a>
 			<a
 				href="/"
-				class="flex flex-col justify-between bg-gray-200 w-1/2 h-72 p-5 rounded-xl hover:bg-gray-400 cursor-pointer"
+				class="flex flex-col justify-between bg-gray-200 w-1/2 h-72 p-5 rounded-xl hover:bg-gray-300 cursor-pointer"
 			>
 				<div>
 					<p class="text-6xl font-bold">漢字</p>
@@ -39,7 +39,7 @@
 				</div>
 			</a>
 		</div>
-		<a href="/" class="bg-gray-200 h-96 my-4 p-5 rounded-xl hover:bg-gray-400 cursor-pointer">
+		<a href="/" class="bg-gray-200 h-96 my-4 p-5 rounded-xl hover:bg-gray-300 cursor-pointer">
 			<p class="text-5xl font-bold">文法</p>
 			<p class="text-2xl font-bold">Grammar</p>
 		</a>
