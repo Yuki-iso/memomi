@@ -3,7 +3,7 @@
 </script>
 
 <header class="w-full fixed flex justify-between p-4">
-    <a href="/">
+    <a href="/dashboard">
       <p class="font-jomhuria text-6xl">MEMOMI</p>
     </a>
     <a href="/">

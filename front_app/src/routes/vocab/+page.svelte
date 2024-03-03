@@ -1,23 +1,34 @@
 <script>
-  let state = false;
+  let state = true;
   let progress = 30;
+
+  let front_card = {
+    kanji: "〜か月",
+    sentence: "日本[にほん]に 来[き]ました。",
+  }
+  let back_card = {
+    english: "2 months ago",
+    sentence: "I came to Japan",
+  }
 </script>
+
 <svelte:head>
 	<title>About</title>
 	<meta name="description" content="About this app" />
 </svelte:head>
-<div class="flex justify-center w-screen h-full">
+
+<div class="flex justify-center w-screen h-full pt-20">
 	<div class="flex flex-col justify-center w-1/2">
     <div class="h-6 rounded-xl border-gray-400 border-2 my-4">
       <div style="width: {progress}%" class="bg-green-500 h-full rounded-xl"></div>
     </div>
 		<div class="bg-gray-100 text-center flex flex-col justify-center rounded-xl h-[600px]">
       {#if state}
-			<p class="text-5xl font-bold p-5">〜か月</p>
-			<p class="text-2xl p-5">2か 月[げつ] 前[まえ]に 日本[にほん]に 来[き]ました。</p>
+			<p class="text-5xl font-bold p-5">{front_card.kanji}</p>
+			<p class="text-2xl p-5">{front_card.sentence}</p>
       {:else}
-      <p class="text-5xl font-bold p-5">test</p>
-      <p class="text-2xl p-5">test</p>
+      <p class="text-5xl font-bold p-5">{back_card.english}</p>
+      <p class="text-2xl p-5">{back_card.sentence}</p>
       {/if}
 		</div>
 		<div class="flex gap-4 justify-center">
