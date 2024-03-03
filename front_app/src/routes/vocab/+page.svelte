@@ -1,4 +1,5 @@
 <script>
+  export let data;
   let state = true;
   let progress = 30;
 
