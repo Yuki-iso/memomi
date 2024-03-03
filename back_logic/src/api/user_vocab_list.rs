@@ -7,8 +7,8 @@ use actix_web::{
     
 };
 use bson::oid::ObjectId;
-use bson::DateTime;
-use mongodb::options::{FindOneOptions, FindOptions};
+use bson::{DateTime, Document};
+use mongodb::options::FindOneOptions;
 use serde::Deserialize;
 use serde::Serialize;
 
@@ -118,58 +118,33 @@ pub struct VocabStatus{
     status: String,
     priority: String
 }
-    let collection: Collection<UserVocabList> = db.collection("user_vocab_list");
 
 
-    let filter = doc! {
-        //"_id": mongodb::bson::oid::ObjectId::parse_str("65cdf9b61efb89c54aa67c99").unwrap()
-        "status_list": {
-            "$elemMatch": { 
-                "status_list_id": mongodb::bson::oid::ObjectId::parse_str(status_list_id.to_string()).unwrap()
-            }
+
+#[put("/update_status")]
+async fn update_status(db: web::Data<Database>, status: web::Json<VocabStatus> ) -> HttpResponse {
+
+    let collection: Collection<UserVocabList> = db.collection(COL_NAME);
+    let filter = doc! { "user_id": status.user_id };
+    let update = doc! { 
+        "$set": doc! {
+            "status_list.$[].user_vocabs.$[xxx].status": status.status.clone(),
+            "status_list.$[].user_vocabs.$[xxx].priority": status.priority.clone()
         }
-    };
-    
-    /*
-    let projection = doc! {
-        "user_vocab_list.status_list.user_vocabs": 1
-    };
+    }; 
 
-    let options = FindOneOptions::builder()
-        .projection(projection)
+    let array_filters: Option<Vec<Document>> = Some(vec![doc! {"xxx.word_id": status.vocab_id.clone()}]);
+    let options = UpdateOptions::builder()
+        .array_filters(array_filters)
         .build();
-    */
-        
-    //println!("{:?}", collection.find_one(filter, None).await);
-    let result = collection.find_one(filter, None).await.unwrap();
-    println!("{:?}", result.clone().unwrap().status_list[0].user_vocabs);
-    let mut words: Vec<UserVocab> = Vec::new();
-    while words.len() < 10 {
-        let temp = result.clone().unwrap().status_list[0].user_vocabs.pop();
-        match temp.clone().unwrap().status {
-            Status::New => words.push(temp.expect("yeah..")),
-            _ => println!(":/"),
+
+    match collection.update_one(filter, update, Some(options)).await {
+        Ok(_) => HttpResponse::Ok().body("Update successful"),
+        Err(e) => {
+            eprintln!("Error updating status: {}", e);
+            HttpResponse::InternalServerError().finish()
         }
     }
-    //for status_lists in 
-    
-    /*
-    // Execute the find operation
-    let mut cursor = collection.find(filter, options).await.unwrap();
-    //println!("{:?}", cursor);
-    let mut result = String::new();
-    while let Some(doc) = cursor.next().await {
-        println!("{:?}", doc);
-        if let Ok(document) = doc {
-            println!("document Ok");
-            if let Ok(status_list) = bson::from_document::<UserVocabList>(document) {
-                println!("status_list Ok");
-                result.push_str(&format!("{:?}", status_list));
-            }
-        }
-    }
-    */
-    HttpResponse::Ok().json(words)
 }
 
 
