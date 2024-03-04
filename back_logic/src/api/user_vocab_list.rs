@@ -105,5 +105,13 @@ async fn new_words(db: web::Data<Database>, status_list_id: web::Path<String>) -
             _ => words.push(temp),
         }
     }   
+
+    let collection: Collection<UserVocabList> = db.collection(COL_NAME_VOCAB);
+
+    let mut cursor = collection.find(doc! { "_id": "65ccc9da1c3d5a7f6d7f99bf" }, None).await;
+
+    while cursor. .advance() {
+        println!("{:?}", cursor.deserialize_current()?);
+    }
     HttpResponse::Ok().json(words)
 }
