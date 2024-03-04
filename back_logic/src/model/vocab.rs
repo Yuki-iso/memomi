@@ -1,7 +1,9 @@
 use serde::{Deserialize, Serialize};
+use bson::{oid::ObjectId};
 
 #[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize)]
 pub struct Vocab{
+    pub _id: ObjectId,
     pub Kanji: String, 
     pub Kanji_Furigana: String, 
     pub Kana: String,

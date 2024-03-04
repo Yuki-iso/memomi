@@ -16,6 +16,7 @@ use crate::model::user_vocab::{Status, UserVocab};
 use crate::model::user_vocab_list::UserVocabList;
 use crate::model::status_list::StatusList;
 use crate::model::vocab_list::VocabList;
+use crate::model::vocab::Vocab;
 
 const COL_NAME: &str = "user_vocab_list";
 const COL_NAME_VOCAB: &str = "vocab_list";
@@ -82,9 +83,8 @@ async fn create_vocab_link(db: web::Data<Database>, user_input: web::Json<UserIn
 
 #[get("/new_words/{status_list_id}")]
 async fn new_words(db: web::Data<Database>, status_list_id: web::Path<String>) -> HttpResponse {
-
+   
     let collection: Collection<UserVocabList> = db.collection(COL_NAME);
-
     let filter = doc! {
         "status_list": {
             "$elemMatch": { 
@@ -94,24 +94,32 @@ async fn new_words(db: web::Data<Database>, status_list_id: web::Path<String>) -
     };
     
     let result = collection.find_one(filter, None).await.unwrap();
-    let mut words: Vec<UserVocab> = Vec::new();
+    let mut words: Vec<Vocab> = Vec::new();
     let mut i = 0;
-    let mut result = result.unwrap().status_list[0].user_vocabs.clone();
+    let mut result = result.unwrap().status_list[0].user_vocabs.clone(); //alleen die status_list[0] is hardcoded, klopt dus nog niet!!1!
+
+    let collection: Collection<VocabList> = db.collection(COL_NAME_VOCAB);
+    let vocabs = collection.find_one(doc! { "_id": mongodb::bson::oid::ObjectId::parse_str("65ccc9da1c3d5a7f6d7f99bf".to_string()).unwrap() }, None).await.unwrap();
+    let mut vocabs = vocabs.unwrap().vocab_list.clone();
+
 
     while result.len() > 0 {
         let temp = result.pop().unwrap();
         match temp.status {
-            Status::New => if i < 10 {words.push(temp); i = i + 1;},
-            _ => words.push(temp),
+            Status::New => if i < 10 {
+                words.push(
+                    vocabs.iter().find(|x| x._id == temp.word_id).unwrap().clone()
+                ); 
+                i = i + 1;
+                println!("word unwrap bs; {:?}", vocabs.iter().find(|x| x._id == temp.word_id));
+            },
+            _ => words.push( //in deze match moeten we dus kijken voor tijden?
+                vocabs.iter().find(|x| x._id == temp.word_id).unwrap().clone()
+
+            ),
         }
     }   
 
-    let collection: Collection<UserVocabList> = db.collection(COL_NAME_VOCAB);
 
-    let mut cursor = collection.find(doc! { "_id": "65ccc9da1c3d5a7f6d7f99bf" }, None).await;
-
-    while cursor. .advance() {
-        println!("{:?}", cursor.deserialize_current()?);
-    }
     HttpResponse::Ok().json(words)
 }
