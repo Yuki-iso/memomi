@@ -35,7 +35,7 @@ export async function load() {
 	};
 }
 
-export async function update(id: number, status: string){
+/*export async function update(id: number, status: string){
   const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/update_status`, {
     method: "PUT",
     headers: {
@@ -44,4 +44,4 @@ export async function update(id: number, status: string){
     body: JSON.stringify({id: id, status: status}),
   });
   return res.json();
-}
+}*/
