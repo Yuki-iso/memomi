@@ -8,9 +8,9 @@ use mongodb::Client;
 use std::env;
 extern crate dotenv;
 use  dotenv::dotenv;
-use model::public_key::Root;
+use biscuit_actix_middleware::BiscuitMiddleware;
 extern crate biscuit_auth as biscuit;
-use biscuit::{KeyPair, Biscuit, error};
+use biscuit::{KeyPair};
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
@@ -29,17 +29,17 @@ async fn main() -> std::io::Result<()> {
     let db_name = env::var("DB_NAME").expect("DB_NAME must be set");  
     let db = client.database(db_name.as_str());
 
-    //let root = KeyPair::new();
+    let root = KeyPair::new();
 
     //println!("yeah {}", root.public());
 
-    let key = Root{public_key: KeyPair::new()};
+    let public_key = root.public();
 
     HttpServer::new(move || {
         App::new()
             .wrap(middleware::Logger::default())
+            .wrap(BiscuitMiddleware::new(public_key))
             .app_data(web::Data::new(db.clone()))
-            .app_data(web::Data::new(key.clone()))
             .service(create_user)
             .service(get_user)
             .service(create_vocab_link)
