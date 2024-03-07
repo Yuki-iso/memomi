@@ -68,6 +68,7 @@ async fn create_vocab_link(db: web::Data<Database>, user_input: web::Json<UserIn
            StatusList{
                 status_list_id: user_input.vocab_list_id,
                 user_vocabs: user_vocabs
+
             },
 
         ],
@@ -93,13 +94,21 @@ async fn new_words(db: web::Data<Database>, status_list_id: web::Path<String>) -
         }
     };
     
-    let result = collection.find_one(filter, None).await.unwrap();
+    let output = collection.find_one(filter, None).await.unwrap();
     let mut words: Vec<Vocab> = Vec::new();
     let mut i = 0;
-    let mut result = result.unwrap().status_list[0].user_vocabs.clone(); //alleen die status_list[0] is hardcoded, klopt dus nog niet!!1!
+    let mut result: Vec<UserVocab> = Vec::new();
+    // = output.unwrap().status_list[0].user_vocabs.clone(); //alleen die status_list[0] is hardcoded, klopt dus nog niet!!1!
+    while result.is_empty() {
+        match output.as_ref().unwrap().status_list[i].status_list_id.to_string() == status_list_id.to_string().as_str() {
+            true => result = output.as_ref().unwrap().status_list[i].user_vocabs.clone(),
+            _ => i = i + 1
+        }
+        // i = i + 1;
+    }
 
     let collection: Collection<VocabList> = db.collection(COL_NAME_VOCAB);
-    let vocabs = collection.find_one(doc! { "_id": mongodb::bson::oid::ObjectId::parse_str("65ccc9da1c3d5a7f6d7f99bf".to_string()).unwrap() }, None).await.unwrap();
+    let vocabs = collection.find_one(doc! { "_id": mongodb::bson::oid::ObjectId::parse_str("65ccc9da1c3d5a7f6d7f99bf").unwrap() }, None).await.unwrap();
     let mut vocabs = vocabs.unwrap().vocab_list.clone();
 
 
