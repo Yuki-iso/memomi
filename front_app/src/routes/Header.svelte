@@ -1,16 +1,17 @@
 <script>
+  import { page } from '$app/stores';  
 </script>
 
-<header class="w-full h-12 flex justify-between p-4">
-	<div class="">
-    <a href="/">
-      <p class="">MEMOMI</p>
+<header class="w-full fixed flex justify-between p-4">
+    <a href="/dashboard">
+      <p class="font-jomhuria text-6xl">MEMOMI</p>
     </a>
-	</div>
-	<nav>
-    <ul class="flex">
-      <li><a href="/vocab">Vocab</a></li>
-    </ul>
-	</nav>
+    <a href="/">
+    {#if $page.url.pathname === "/register"}
+      <button class="p-3  rounded-xl text-xl font-bold bg-gray-100">Login</button>
+    {:else if $page.url.pathname === "/login"}
+      <button class="p-3  rounded-xl text-xl font-bold bg-gray-100">Register</button>
+    {/if}
+  </a>
 </header>
 
