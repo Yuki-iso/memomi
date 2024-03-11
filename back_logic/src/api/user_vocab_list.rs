@@ -123,13 +123,11 @@ async fn new_words(db: web::Data<Database>, status_list_id: web::Path<String>) -
                     vocabs.iter().find(|x| x._id == temp.word_id).unwrap().clone()
                 );
                 i = i + 1;
-                println!("word unwrap bs; {:?}", vocabs.iter().find(|x| x._id == temp.word_id));
             },
             _ => { words.push( //in deze match moeten we dus kijken voor tijden?
                 vocabs.iter().find(|x| x._id == temp.word_id).unwrap().clone()
 
             );
-            println!("word unwrap xtra's; {:?}", vocabs.iter().find(|x| x._id == temp.word_id));
             },
         }
     }   
