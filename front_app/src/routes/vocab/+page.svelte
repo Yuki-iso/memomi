@@ -15,11 +15,11 @@
 		switch (event.target.innerText) {
 			case 'Easy':
 				progress += 100 / max_progress;
-				cards = cards.filter((_, index) => index !== id); 
+				cards = cards.filter((_, index) => index !== id);
 				break;
 			case 'Medium':
 				progress += 100 / max_progress;
-				cards = cards.filter((_, index) => index !== id); 
+				cards = cards.filter((_, index) => index !== id);
 				break;
 			case 'Hard':
 				cards[id].status = 'Failed';
@@ -39,18 +39,24 @@
 <div class="flex justify-center w-screen h-full pt-20">
 	{#if card != null}
 		<div class="flex flex-col justify-center w-1/2">
-			<div class="h-6 rounded-xl border-gray-400 border-2 my-4">
-				<div style="width: {progress}%" class="bg-green-500 h-full rounded-xl"></div>
+			<div class="h-6 rounded-xl my-4">
+				<div
+					style="width: {progress}%; transition: width 0.5s ease-out"
+					class="bg-green-500 h-full rounded-xl"
+				></div>
 			</div>
-			<div class="bg-gray-100 text-center flex flex-col justify-center rounded-xl h-[600px]">
-				{#if show_card}
+			<div class="bg-gray-100 flip-box-inner text-center rounded-xl h-[600px] relative " class:flip={show_card}>
+				<div class="absolute flex justify-center items-center flex-col w-full visibility h-full bg-gray-100"> 
 					<p class="text-5xl font-bold p-5">{card.english}</p>
 					<p class="text-2xl p-5">{card.en_sentence}</p>
-				{:else}
+				</div>
+
+				<div class="absolute flex justify-center items-center flex-col w-full visibility h-full flip bg-gray-100" >
 					<p class="text-5xl font-bold p-5">{card.kanji}</p>
 					<p class="text-2xl p-5">{card.jp_sentence}</p>
-				{/if}
+				</div>
 			</div>
+
 			<div class="flex gap-4 justify-center">
 				{#if !show_card}
 					<button
@@ -87,3 +93,17 @@
 		<p class="text-5xl font-bold p-5">No more cards</p>
 	{/if}
 </div>
+
+<style>
+	.flip {
+		transform: rotateY(180deg);
+	}
+  .visibility {
+    backface-visibility: hidden;
+  }
+  .flip-box-inner {
+    transition: transform 0.5s;
+    transform-style: preserve-3d;
+    perspective: 1000px;
+  }
+</style>
