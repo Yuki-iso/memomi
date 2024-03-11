@@ -10,7 +10,7 @@ use bson::DateTime;
 use mongodb::options::FindOneOptions;
 use serde::Deserialize;
 use serde::Serialize;
-use mongodb::{bson::doc, results::InsertOneResult, Collection, Database};
+use mongodb::{bson::doc, bson::oid, results::InsertOneResult, Collection, Database};
 
 use crate::model::user_vocab::{Status, UserVocab};
 use crate::model::user_vocab_list::UserVocabList;
@@ -67,7 +67,8 @@ async fn create_vocab_link(db: web::Data<Database>, user_input: web::Json<UserIn
         status_list: vec![
            StatusList{
                 status_list_id: user_input.vocab_list_id,
-                user_vocabs: user_vocabs
+                user_vocabs: user_vocabs,
+                vocab_list_id: ObjectId::parse_str("000000000000000000000000").unwrap()
 
             },
 
@@ -107,8 +108,10 @@ async fn new_words(db: web::Data<Database>, status_list_id: web::Path<String>) -
         // i = i + 1;
     }
 
+    //println!("{:?}", &output.unwrap().status_list[i]);
+
     let collection: Collection<VocabList> = db.collection(COL_NAME_VOCAB);
-    let vocabs = collection.find_one(doc! { "_id": mongodb::bson::oid::ObjectId::parse_str("65ccc9da1c3d5a7f6d7f99bf").unwrap() }, None).await.unwrap();
+    let vocabs = collection.find_one(doc! { "_id": &output.unwrap().status_list[i].vocab_list_id }, None).await.unwrap();
     let mut vocabs = vocabs.unwrap().vocab_list.clone();
 
 
@@ -118,14 +121,16 @@ async fn new_words(db: web::Data<Database>, status_list_id: web::Path<String>) -
             Status::New => if i < 10 {
                 words.push(
                     vocabs.iter().find(|x| x._id == temp.word_id).unwrap().clone()
-                ); 
+                );
                 i = i + 1;
                 println!("word unwrap bs; {:?}", vocabs.iter().find(|x| x._id == temp.word_id));
             },
-            _ => words.push( //in deze match moeten we dus kijken voor tijden?
+            _ => { words.push( //in deze match moeten we dus kijken voor tijden?
                 vocabs.iter().find(|x| x._id == temp.word_id).unwrap().clone()
 
-            ),
+            );
+            println!("word unwrap xtra's; {:?}", vocabs.iter().find(|x| x._id == temp.word_id));
+            },
         }
     }   
 

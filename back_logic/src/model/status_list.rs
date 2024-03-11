@@ -7,4 +7,5 @@ use super::user_vocab::UserVocab;
 pub struct StatusList{
     pub status_list_id: ObjectId,
     pub user_vocabs: Vec<UserVocab>, 
+    pub vocab_list_id: ObjectId,
 }
