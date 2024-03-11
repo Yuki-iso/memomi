@@ -12,6 +12,7 @@ use serde::Deserialize;
 use serde::Serialize;
 use mongodb::{bson::doc, bson::oid, results::InsertOneResult, Collection, Database};
 
+
 use crate::model::user_vocab::{Status, UserVocab};
 use crate::model::user_vocab_list::UserVocabList;
 use crate::model::status_list::StatusList;
@@ -66,10 +67,9 @@ async fn create_vocab_link(db: web::Data<Database>, user_input: web::Json<UserIn
         user_id: user_input.user_id, 
         status_list: vec![
            StatusList{
-                status_list_id: user_input.vocab_list_id,
+                status_list_id: ObjectId::new(),
                 user_vocabs: user_vocabs,
-                vocab_list_id: ObjectId::parse_str("000000000000000000000000").unwrap()
-
+                vocab_list_id: user_input.vocab_list_id,
             },
 
         ],
